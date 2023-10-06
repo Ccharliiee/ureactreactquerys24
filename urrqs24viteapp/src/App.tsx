@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
-function App() {
-  const [count, setCount] = useState(0)
+import AppHome from "./components/AppHome.js";
+import Events from "./components/Events/Events.jsx";
+import EventDetails from "./components/Events/EventDetails.jsx";
+import NewEvent from "./components/Events/NewEvent.jsx";
+import EditEvent from "./components/Events/EditEvent.jsx";
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppHome />,
+  },
+  {
+    path: "/events",
+    element: <Events />,
+
+    children: [
+      {
+        path: "/events/new",
+        element: <NewEvent />,
+      },
+    ],
+  },
+  {
+    path: "/events/:id",
+    element: <EventDetails />,
+    children: [
+      {
+        path: "/events/:id/edit",
+        element: <EditEvent />,
+      },
+    ],
+  },
+]);
+
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
-
-export default App
