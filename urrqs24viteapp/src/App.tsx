@@ -1,12 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 
-import { queryClient } from "./helper/httpRequest.js";
-import AppHome from "./components/AppHome.js";
-import Events from "./components/Events/Events.jsx";
-import EventDetails from "./components/Events/EventDetails.jsx";
-import NewEvent from "./components/Events/NewEvent.jsx";
-import EditEvent from "./components/Events/EditEvent.jsx";
+import { queryClient } from "./helper/httpRequest.tsx";
+import AppHome from "./components/AppHome.tsx";
+import Events from "./components/Events/Events.tsx";
+import EventDetails from "./components/Events/EventDetails.tsx";
+import NewEvent from "./components/Events/NewEvent.tsx";
+import EditEvent from "./components/Events/EditEvent.tsx";
 
 const router = createBrowserRouter([
   {

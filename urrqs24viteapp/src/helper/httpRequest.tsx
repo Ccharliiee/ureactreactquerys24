@@ -35,6 +35,29 @@ export const getEvents = async (props: {
   return events;
 };
 
+export const getEvent = async (props: {
+  signal: AbortSignal | null | undefined;
+  id: string | undefined;
+}) => {
+  const { id, signal } = props;
+  const response = await fetch(`http://localhost:3000/events/${id}`, {
+    signal,
+  });
+
+  if (!response.ok) {
+    const error: ErrorT = new Error(
+      "An error occurred while fetching the event"
+    );
+    error.code = response.status;
+    error.info = await response.json();
+    throw error;
+  }
+
+  const { event } = await response.json();
+
+  return event;
+};
+
 export const createNewEvent = async (eventData: any) => {
   const response = await fetch(`http://localhost:3000/events`, {
     method: "POST",
@@ -77,4 +100,21 @@ export const getAvailableImages = async (props: {
   const { images } = await response.json();
 
   return images;
+};
+
+export const deleteEvent = async (props: { id: string }) => {
+  const response = await fetch(`http://localhost:3000/events/${props.id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error: ErrorT = new Error(
+      "An error occurred while deleting the event"
+    );
+    error.code = response.status;
+    error.info = await response.json();
+    throw error;
+  }
+
+  return response.json();
 };
