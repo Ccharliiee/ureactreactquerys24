@@ -12,14 +12,20 @@ export type ErrorT = Error & {
 export const getEvents = async (props: {
   signal?: AbortSignal | null | undefined;
   searchKey?: string;
+  limit?: number;
 }) => {
+  const { signal, searchKey, limit } = props;
   let url = "http://localhost:3000/events";
 
-  if (props?.searchKey) {
-    url += "?search=" + props.searchKey;
+  if (searchKey && limit) {
+    url += "?search=" + searchKey + "&limit=" + limit;
+  } else if (searchKey) {
+    url += "?search=" + searchKey;
+  } else if (limit) {
+    url += "?limit=" + limit;
   }
 
-  const response = await fetch(url, { signal: props?.signal });
+  const response = await fetch(url, { signal: signal });
 
   if (!response.ok) {
     const error: ErrorT = new Error(

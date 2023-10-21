@@ -8,8 +8,9 @@ import { Key } from "react";
 
 export default function NewEventsSection() {
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["events"],
-    queryFn: getEvents,
+    queryKey: ["events", { limit: 3 }],
+    queryFn: ({ signal, queryKey }) =>
+      getEvents({ signal, ...(queryKey[1] as object) }),
     staleTime: 3000,
     gcTime: 30000,
   });
