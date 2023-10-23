@@ -6,7 +6,10 @@ import AppHome from "./components/AppHome.tsx";
 import Events from "./components/Events/Events.tsx";
 import EventDetails from "./components/Events/EventDetails.tsx";
 import NewEvent from "./components/Events/NewEvent.tsx";
-import EditEvent from "./components/Events/EditEvent.tsx";
+import EditEvent, {
+  eventDataLoader,
+  uploadEditedEventAction,
+} from "./components/Events/EditEvent.tsx";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +34,8 @@ const router = createBrowserRouter([
       {
         path: "/events/:id/edit",
         element: <EditEvent />,
+        loader: eventDataLoader,
+        action: uploadEditedEventAction,
       },
     ],
   },

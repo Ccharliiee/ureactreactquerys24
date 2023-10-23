@@ -1,9 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  redirect,
+  useNavigate,
+  useNavigation,
+  useParams,
+  useSubmit,
+} from "react-router-dom";
 
 import Modal from "../UI/Modal.js";
 import EventForm from "./EventForm.jsx";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   getEvent,
   uploadEditedEvent,
@@ -15,35 +22,38 @@ import LoadingIndicator from "../UI/LoadingIndicator.js";
 
 export default function EditEvent() {
   const navigate = useNavigate();
+  const { state } = useNavigation();
+
+  const submit = useSubmit();
 
   const params = useParams();
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["events", params.id],
     queryFn: ({ signal }) => getEvent({ signal, id: params.id }),
+    staleTime: 10000,
   });
 
-  const { mutate } = useMutation({
-    mutationFn: uploadEditedEvent,
-    onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: ["events", params.id] });
-      const lastVerEvent = queryClient.getQueryData(["events", params.id]);
+  // const { mutate } = useMutation({
+  //   mutationFn: uploadEditedEvent,
+  //   onMutate: async (data) => {
+  //     await queryClient.cancelQueries({ queryKey: ["events", params.id] });
+  //     const lastVerEvent = queryClient.getQueryData(["events", params.id]);
 
-      queryClient.setQueryData(["events", params.id], data.event);
+  //     queryClient.setQueryData(["events", params.id], data.event);
 
-      return { lastVerEvent };
-    },
-    onError: (error, data, context) => {
-      queryClient.setQueryData(["events", params.id], context?.lastVerEvent);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["events", params.id] });
-    },
-  });
+  //     return { lastVerEvent };
+  //   },
+  //   onError: (error, data, context) => {
+  //     queryClient.setQueryData(["events", params.id], context?.lastVerEvent);
+  //   },
+  //   onSettled: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["events", params.id] });
+  //   },
+  // });
 
   const editedEventSubmitHandler = (formData: any) => {
-    mutate({ id: params.id!, event: formData });
-    navigate("../");
+    submit(formData, { method: "PUT" });
   };
 
   const handleClose = () => {
@@ -82,12 +92,18 @@ export default function EditEvent() {
   if (data) {
     content = (
       <EventForm inputData={data} onSubmit={editedEventSubmitHandler}>
-        <Link to="../" className="button-text">
-          Cancel
-        </Link>
-        <button type="submit" className="button">
-          Update
-        </button>
+        {state === "submitting" ? (
+          <p>Sending data...</p>
+        ) : (
+          <>
+            <Link to="../" className="button-text">
+              Cancel
+            </Link>
+            <button type="submit" className="button">
+              Update
+            </button>
+          </>
+        )}
       </EventForm>
     );
   }
@@ -98,3 +114,23 @@ export default function EditEvent() {
     </div>
   );
 }
+
+export const eventDataLoader = (props: { params: any }) => {
+  return queryClient.fetchQuery({
+    queryKey: ["events", props.params.id],
+    queryFn: ({ signal }) => getEvent({ signal, id: props.params.id }),
+  });
+};
+
+export const uploadEditedEventAction = async (props: {
+  request: { formData: () => any };
+  params: any;
+}) => {
+  const formData = await props.request.formData();
+  const updatedEventData = Object.fromEntries(formData);
+  await uploadEditedEvent({ id: props.params.id, event: updatedEventData });
+  await queryClient.invalidateQueries({
+    queryKey: ["events", props.params.id],
+  });
+  return redirect("../");
+};
